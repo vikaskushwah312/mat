@@ -1,0 +1,11 @@
+products all
+GET /api/products
+
+filter 
+GET /api/products?category=electronics&brand=sony&minPrice=100&maxPrice=1000
+
+Search products:
+GET /api/products?search=wireless
+
+Get single product:
+GET /api/products/123
