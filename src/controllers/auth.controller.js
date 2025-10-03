@@ -215,7 +215,7 @@ exports.verifyOTP = async (req, res) => {
     await user.save();
 
     // Generate JWT token
-    const token = generateToken(user.id);
+    // const token = generateToken(user.id);
     const products = await getActiveProducts();
     res.status(200).json({
       status: 'success',
@@ -227,7 +227,7 @@ exports.verifyOTP = async (req, res) => {
           status: user.status
         },
         products: products,
-        token
+        // token
       }
     });
   } catch (error) {
