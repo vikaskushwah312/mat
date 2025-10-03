@@ -90,7 +90,7 @@ exports.resendOTP = async (req, res) => {
       message: 'OTP resent successfully',
       data: {
         phone,
-        otp: process.env.NODE_ENV === 'development' ? otp : undefined // Only send OTP in development
+        otp: otp
       }
     });
   } catch (error) {
@@ -157,7 +157,7 @@ exports.requestOTP = async (req, res) => {
       message: 'OTP sent successfully',
       data: {
         phone,
-        otp: process.env.NODE_ENV === 'development' ? otp : undefined // Only send OTP in development
+        otp: otp
       }
     });
   } catch (error) {
