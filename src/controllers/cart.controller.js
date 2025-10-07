@@ -79,8 +79,40 @@ exports.getCartItems = async (req, res) => {
         ...item,
         images: item.images ? item.images.split(',') : []
       }));
+      
+      const suggestionProducts = await sequelize.query(
+        `
+        SELECT 
+          p.id AS productId,
+          p.heading AS product_name,
+          p.price AS product_price,
+          p.mrp AS product_mrp,
+          p.brand AS product_brand,
+          p.item AS product_item,
+          p.product_type,
+          IFNULL(GROUP_CONCAT(pi.image_url ORDER BY pi.is_primary DESC SEPARATOR ','), '') AS images
+        FROM products p
+        LEFT JOIN product_images pi ON pi.productId = p.id AND pi.status = 'active'
+        WHERE p.id NOT IN (
+          SELECT productId FROM cart_items WHERE userId = :userId AND status = 'active'
+        )
+        GROUP BY p.id
+        ORDER BY RAND()
+        LIMIT 10
+        `,
+        {
+          replacements: { userId },
+          type: sequelize.QueryTypes.SELECT
+        }
+      );
   
-      res.status(200).json({ status: 'success', data: formattedCartItems });
+      // Convert images to array
+      const formattedSuggestions = suggestionProducts.map(item => ({
+        ...item,
+        images: item.images ? item.images.split(',') : []
+      }));
+
+      res.status(200).json({ status: 'success', data: formattedCartItems, suggestion: formattedSuggestions });
     } catch (error) {
       console.error(error);
       res.status(500).json({ status: 'error', message: 'Failed to get cart items' });
@@ -144,87 +176,85 @@ exports.clearCart = async (req, res) => {
 
 // Checkout
 exports.checkout = async (req, res) => {
-    const { userId } = req.body;
-  
-    const t = await sequelize.transaction();
-  
-    try {
-      // 1. Get active cart items and their products manually
-      const cartItems = await CartItem.findAll({
-        where: { userId, status: 'active' },
-        raw: true
-      });
-  
-      if (!cartItems.length) return res.status(400).json({ message: 'Cart is empty' });
-  
-      // 2. Fetch products for these cart items
-      const productIds = cartItems.map(item => item.productId);
+  const { userId, shipping_address, billing_address, order_items } = req.body;
+
+  if (!userId || !order_items || order_items.length === 0) {
+      return res.status(400).json({ status: 'error', message: 'Invalid payload' });
+  }
+
+  const t = await sequelize.transaction();
+
+  try {
+      const productIds = order_items.map(item => item.productId);
       const products = await Product.findAll({
-        where: { id: productIds },
-        raw: true
+          where: { id: productIds },
+          attributes: ['id', 'price', 'heading', 'brand', 'product_type']
       });
-  
-      // 3. Map products by ID for easy lookup
+
+      // Convert to map for easy lookup
       const productMap = {};
-      products.forEach(p => { productMap[p.id] = p; });
-  
-      // 4. Calculate total and check stock
+      products.forEach(p => {
+          productMap[p.id] = p;
+      });
+
+      // Calculate totalAmount
       let totalAmount = 0;
-      for (let item of cartItems) {
-        const product = productMap[item.productId];
-        if (!product) throw new Error(`Product not found: ${item.productId}`);
-        if (item.quantity > product.stock_quantity) {
-          throw new Error(`Insufficient stock for product ${product.heading}`);
-        }
-        totalAmount += parseFloat(item.total_price);
-      }
-  
-      // 5. Create Order
-      const order = await Order.create({
-        userId,
-        total_amount: totalAmount,
-        payment_status: 'pending',
-        shipping_address: req.body.shipping_address,
-        billing_address: req.body.billing_address,
-        status: 'pending'
-      }, { transaction: t });
-  
-      // 6. Create Order Items and reduce stock
-      for (let item of cartItems) {
-        const product = productMap[item.productId];
-  
-        await OrderItem.create({
-          order_id: order.id,
-          product_id: item.productId,
-          quantity: item.quantity,
-          price: item.price,
-          total: item.total_price,
-          product_details: {
-            heading: product.heading,
-            brand: product.brand,
-            product_type: product.product_type
+      const orderDetails = order_items.map(item => {
+          const product = productMap[item.productId];
+          if (!product) {
+              throw new Error(`Product ID ${item.productId} not found`);
           }
-        }, { transaction: t });
-  
-        // Reduce product stock
-        await Product.update(
-          { stock_quantity: product.stock_quantity - item.quantity },
-          { where: { id: product.id }, transaction: t }
-        );
+
+          const itemTotal = product.price * item.quantity;
+          totalAmount += itemTotal;
+
+          return {
+              productId: item.productId,
+              productName: product.heading,
+              price: product.price,
+              quantity: item.quantity,
+              total: itemTotal
+          };
+      });
+
+      console.log("orderDetails >> ", orderDetails);
+
+      // Create Order
+      const order = await Order.create({
+          userId,
+          total_amount: totalAmount,
+          payment_status: 'pending',
+          shipping_address, // assuming JSON or text column
+          billing_address,  // assuming JSON or text column
+          status: 'order confirmed'
+      }, { transaction: t });
+
+      // Create Order Items
+      for (let item of orderDetails) {
+          const product = productMap[item.productId];
+
+          await OrderItem.create({
+              order_id: order.id,
+              product_id: item.productId,
+              quantity: item.quantity,
+              price: item.price,
+              total: item.total,
+              product_details: {
+                  heading: product.heading,
+                  brand: product.brand,
+                  product_type: product.product_type
+              }
+          }, { transaction: t });
       }
-  
-      // 7. Mark cart items as ordered
-      await CartItem.update(
-        { status: 'ordered' },
-        { where: { userId, status: 'active' }, transaction: t }
-      );
-  
+
       await t.commit();
       res.status(200).json({ message: 'Order placed successfully', orderId: order.id });
-  
-    } catch (err) {
+
+  } catch (err) {
       await t.rollback();
+      console.error('Checkout Error:', err);
       res.status(500).json({ message: err.message });
-    }
-  };
+  }
+};
+
   

@@ -7,6 +7,36 @@ const User = sequelize.define('User', {
     primaryKey: true,
     autoIncrement: true,
   },
+  userType: {
+    type: DataTypes.ENUM('customer', 'vendor'),
+    allowNull: false,
+    defaultValue: 'customer',
+  },
+  firstName: {
+    type: DataTypes.STRING(100),
+    allowNull: true,
+  },
+  lastName: {
+    type: DataTypes.STRING(100),
+    allowNull: true,
+  },
+  email: {
+    type: DataTypes.STRING(50),
+    allowNull: true,
+    validate: {
+      isEmail: true,
+    },
+  },
+  photo: {
+    type: DataTypes.STRING(250),
+    allowNull: true,
+  },
+  notificationSetting: {
+    type: DataTypes.BOOLEAN, // tinyint(1) → boolean
+    allowNull: false,
+    defaultValue: true, // 1 = ON
+    comment: '1=ON, 0=OFF',
+  },
   phone: {
     type: DataTypes.STRING(15),
     allowNull: false,
@@ -16,26 +46,26 @@ const User = sequelize.define('User', {
     allowNull: true,
     validate: {
       isNumeric: true,
-      len: [4, 4]
-    }
+      len: [4, 4],
+    },
   },
   status: {
     type: DataTypes.ENUM('0', '1'),
+    allowNull: false,
     defaultValue: '0', // 0 = Inactive, 1 = Active
-    allowNull: false
   },
   otpExpires: {
     type: DataTypes.DATE,
-    allowNull: true
-  }
+    allowNull: true,
+  },
 }, {
   tableName: 'users',
   timestamps: true,
   createdAt: 'created_at',
-  updatedAt: 'updated_at'
+  updatedAt: 'updated_at',
 });
 
-// Set up associations
+// Associations
 User.associate = (models) => {
   User.hasMany(models.Order, {
     foreignKey: 'user_id',

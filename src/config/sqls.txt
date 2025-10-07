@@ -51,3 +51,64 @@ CREATE TABLE order_items (
     CONSTRAINT fk_order_items_order FOREIGN KEY (order_id) REFERENCES orders(order_id) ON DELETE CASCADE,
     CONSTRAINT fk_order_items_product FOREIGN KEY (product_id) REFERENCES products(product_id)
 );
+
+05-10-2025
+ALTER TABLE `users` ADD `userType` ENUM('customer','vendor') NOT NULL DEFAULT 'customer' AFTER `id`, ADD `firstName` VARCHAR(100) NULL DEFAULT NULL AFTER `userType`, ADD `lastName` VARCHAR(100) NULL DEFAULT NULL AFTER `firstName`, ADD `email` VARCHAR(50) NULL DEFAULT NULL AFTER `lastName`, ADD `photo` VARCHAR(250) NULL DEFAULT NULL AFTER `email`, ADD `notificationSetting` TINYINT(1) NOT NULL DEFAULT '1' COMMENT '1=ON, 0=OFF' AFTER `photo`;
+ALTER TABLE `products` DROP INDEX `products_userId`;
+ALTER TABLE `products` DROP INDEX `products_status`;
+ALTER TABLE `products` DROP INDEX `products_brand`;
+ALTER TABLE `products` DROP INDEX `products_product_type`;
+
+ALTER TABLE `orders` CHANGE `status` `status` ENUM('pending','processing','shipped','delivered','cancelled','order confirmed') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'pending';
+
+TABLE `orders` DROP `order_number`;"?
+
+create new table for address so all addres fiels here
+type = yourSelf, SomeoneElse
+nickName,
+houseNumber,
+floor,
+towar,
+landmark,
+description,
+recipientName,
+recipientPhoneNumber
+
+upload address table alos on server
+
+
+CREATE TABLE `gstn` (
+  `id` INT(11) NOT NULL AUTO_INCREMENT,
+  `userId` INT(11) NOT NULL,
+  `gstn` VARCHAR(20) NOT NULL,
+  `firstName` VARCHAR(100) NOT NULL,
+  `lastName` VARCHAR(100) NOT NULL,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  FOREIGN KEY (`userId`) REFERENCES `users`(`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+
+ALTER TABLE `addresses` ADD `houseNumber` VARCHAR(250) NULL AFTER `phone`, ADD `floor` VARCHAR(250) NULL AFTER `houseNumber`, ADD `towar` VARCHAR(250) NULL AFTER `floor`, ADD `landmark` VARCHAR(250) NULL AFTER `towar`, ADD `description` VARCHAR(250) NULL AFTER `landmark`, ADD `recipientName` VARCHAR(250) NULL AFTER `description`, ADD `recipientPhoneNumber` VARCHAR(250) NULL AFTER `recipientName`;
+
+for GSTN table
+GSTN
+firstName,
+lastName
+
+ALTER TABLE `orders` CHANGE `status` `status` ENUM('pending','processing','shipped','delivered','cancelled','order confirmed') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'order confirmed';
+
+if user is provider then create table for Business Details
+companyName
+panNumber,
+gstNumber,
+companyAddress,
+pinCode, 
+city,
+state,
+cinNumber
+
+add product Details
+
+

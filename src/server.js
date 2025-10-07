@@ -5,6 +5,14 @@ const authRoutes = require('./routes/auth.routes');
 const cartRoutes = require('./routes/cart.routes');
 const productRoutes = require('./routes/product.routes');
 const orderRoutes = require('./routes/order.routes');
+const addressRoutes = require('./routes/address.routes');
+const gstnRoutes = require('./routes/gstn.routes');
+const faqRoutes = require('./routes/faq.routes');
+const ratingRoutes = require('./routes/rating.routes');
+const cancelOrderRoutes = require('./routes/cancelOrder.routes');
+const reportBugRoutes = require('./routes/reportBug.routes');
+const userRoutes = require('./routes/user.routes');
+const businessDetailsRoutes = require('./routes/businessDetails.route');
 // Load environment variables
 require('dotenv').config();
 
@@ -36,6 +44,14 @@ app.use('/api/auth', authRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
+app.use('/api/addresses', addressRoutes);
+app.use('/api/gstn', gstnRoutes);
+app.use('/api/faqs', faqRoutes);
+app.use('/api/ratings', ratingRoutes);
+app.use('/api/cancelOrders', cancelOrderRoutes);
+app.use('/api/reportBugs', reportBugRoutes);
+app.use('/api/user', userRoutes);
+app.use('/api/business-details', businessDetailsRoutes);
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);

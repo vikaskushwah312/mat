@@ -23,6 +23,7 @@ const getActiveProducts = async () => {
         p.created_at DESC,
         pi.is_primary DESC,
         pi.display_order ASC
+      LIMIT 30
     `);
 
     // Rest of your code remains the same...

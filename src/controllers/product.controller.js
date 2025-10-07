@@ -11,40 +11,72 @@ exports.getAllProducts = async (req, res) => {
         page = 1, 
         limit = 10, 
         product_type, 
+        item,
         brand, 
-        minPrice, 
-        maxPrice, 
+        price, 
+        // maxPrice, 
         search, 
         sortBy = 'created_at', 
         order = 'DESC' 
       } = req.query;
-  
+      console.log("req.query", req.query);
       const offset = (page - 1) * limit;
   
       // Build WHERE clause
       let whereClause = `WHERE p.status = 'active'`;
       const replacements = {};
   
-      if (product_type) {
-        whereClause += ` AND p.product_type = :product_type`;
-        replacements.product_type = product_type;
+      if (product_type && product_type.trim() !== "" && product_type.trim() !== '""') {
+        whereClause += ` AND TRIM(p.product_type) = :product_type`;
+        replacements.product_type = product_type.trim();
       }
-      if (brand) {
-        whereClause += ` AND p.brand = :brand`;
-        replacements.brand = brand;
+      if (item && item.trim() !== "" && item.trim() !== '""') {
+        const cleanItem = item.trim().replace(/^['"]+|['"]+$/g, '').trim(); // remove quotes
+      
+        whereClause += ` AND LOWER(TRIM(p.item)) LIKE :item`;
+        replacements.item = `${cleanItem.toLowerCase()}%`; // starts with given text
+      }      
+      
+      // sanitize brand from query
+      let brandRaw = req.query?.brand;           
+      let brandClean = '';
+
+      if (typeof brandRaw !== 'undefined' && brandRaw !== null) {
+        brandClean = String(brandRaw).trim();
+
+        // Remove surrounding single or double quotes (and any extras)
+        // e.g. '"Greenply"' -> 'Greenply',  '""' -> ''
+        brandClean = brandClean.replace(/^['"]+|['"]+$/g, '').trim();
+
+        // Optionally decode URI components if frontend double-encodes
+        try { brandClean = decodeURIComponent(brandClean); } catch (e) { /* ignore */ }
+
+        // final trim after decode
+        brandClean = brandClean.trim();
       }
-      if (minPrice) {
-        whereClause += ` AND p.price >= :minPrice`;
-        replacements.minPrice = parseFloat(minPrice);
+
+      // Only add the brand WHERE clause when cleaned value is non-empty
+      if (brandClean.length > 0) {
+        console.log("working with brand");
+        whereClause += ` AND LOWER(TRIM(p.brand)) = :brand`;
+        replacements.brand = brandClean.toLowerCase();
       }
-      if (maxPrice) {
-        whereClause += ` AND p.price <= :maxPrice`;
-        replacements.maxPrice = parseFloat(maxPrice);
+      // Price filters
+      // Always filter price > 0
+      whereClause += ` AND p.price >= 0`;
+
+      if (price) {
+        console.log("working with price");
+        whereClause += ` AND p.price <= :price`;
+        replacements.price = parseFloat(price);
       }
-      if (search) {
-        whereClause += ` AND (p.heading LIKE :search OR p.sub_heading LIKE :search OR p.details LIKE :search)`;
-        replacements.search = `%${search}%`;
-      }
+
+      console.log("whereClause", whereClause);
+      console.log("replacements", replacements);
+      // if (search) {
+      //   whereClause += ` AND (p.heading LIKE :search OR p.sub_heading LIKE :search OR p.details LIKE :search)`;
+      //   replacements.search = `%${search}%`;
+      // }
   
       // Sorting
       let orderBy = `ORDER BY p.created_at DESC`;
@@ -117,13 +149,13 @@ exports.getAllProducts = async (req, res) => {
       res.status(200).json({
         status: 'success',
         data: {
-          products: formattedProducts,
           pagination: {
             total,
             totalPages: Math.ceil(total / limit),
             currentPage: parseInt(page),
             perPage: parseInt(limit)
-          }
+          },
+          products: formattedProducts,
         }
       });
   

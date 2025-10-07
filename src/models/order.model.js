@@ -7,11 +7,6 @@ const Order = sequelize.define('Order', {
     primaryKey: true,
     autoIncrement: true,
   },
-  order_number: {            // Uncommented for unique order number
-    type: DataTypes.STRING(50),
-    allowNull: true,
-    unique: true,
-  },
   userId: {                  // Field name corrected
     type: DataTypes.INTEGER,
     allowNull: false,
@@ -63,12 +58,5 @@ Order.associate = (models) => {
     as: 'items',
   });
 };
-
-// Generate unique order number
-Order.beforeCreate(async (order) => {
-  const timestamp = Date.now();
-  const random = Math.floor(Math.random() * 1000);
-  order.order_number = `ORD-${timestamp}-${random}`;
-});
 
 module.exports = Order;

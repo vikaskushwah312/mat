@@ -9,3 +9,5 @@ GET /api/products?search=wireless
 
 Get single product:
 GET /api/products/123
+
+http://13.234.59.130:3000/api/auth/verify-otp
