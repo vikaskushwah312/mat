@@ -117,4 +117,13 @@ NOT DONE
 ALTER TABLE `order_items` ADD `providerId` INT(11) NULL COMMENT 'user.id' AFTER `price`;
 ALTER TABLE `products` CHANGE `userId` `userId` INT(11) NOT NULL COMMENT 'provider id';
 
+08-102025
+ALTER TABLE `users` CHANGE `userType` `userType` ENUM('customer','vendor','admin','subAdmin') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'customer';
+
+ALTER TABLE `products` ADD `userType` VARCHAR(250) NULL AFTER `id`;
+
+DROP TABLE `mat`.`gstn`"
+
+ALTER TABLE `orders` CHANGE `status` `status` ENUM('pending','processing','shipped','delivered','cancelled','orderConfirmed') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'pending';
+
 

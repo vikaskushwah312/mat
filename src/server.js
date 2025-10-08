@@ -13,6 +13,9 @@ const cancelOrderRoutes = require('./routes/cancelOrder.routes');
 const reportBugRoutes = require('./routes/reportBug.routes');
 const userRoutes = require('./routes/user.routes');
 const businessDetailsRoutes = require('./routes/businessDetails.route');
+const authAdminRoutes = require('./routes/authAdmin.routes');
+const adminRoutes = require('./routes/admin.routes');
+
 // Load environment variables
 require('dotenv').config();
 
@@ -72,6 +75,8 @@ app.use('/api/cancelOrders', cancelOrderRoutes);
 app.use('/api/reportBugs', reportBugRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/business-details', businessDetailsRoutes);
+app.use('/api/admin/auth', authAdminRoutes);
+app.use('/api/admin', adminRoutes);
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);

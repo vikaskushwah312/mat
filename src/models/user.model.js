@@ -8,7 +8,7 @@ const User = sequelize.define('User', {
     autoIncrement: true,
   },
   userType: {
-    type: DataTypes.ENUM('customer', 'vendor'),
+    type: DataTypes.ENUM('customer', 'vendor', 'admin', 'subAdmin'),
     allowNull: false,
     defaultValue: 'customer',
   },

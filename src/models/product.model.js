@@ -7,6 +7,10 @@ const Product = sequelize.define('Product', {
     primaryKey: true,
     autoIncrement: true,
   },
+  userType: {
+    type: DataTypes.STRING(255),
+    allowNull: false,
+  },
   heading: {
     type: DataTypes.STRING(255),
     allowNull: false,
