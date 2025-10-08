@@ -100,6 +100,7 @@ lastName
 ALTER TABLE `orders` CHANGE `status` `status` ENUM('pending','processing','shipped','delivered','cancelled','order confirmed') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'order confirmed';
 
 if user is provider then create table for Business Details
+userId
 companyName
 panNumber,
 gstNumber,
@@ -110,5 +111,10 @@ state,
 cinNumber
 
 add product Details
+
+NOT DONE
+07-10-2025
+ALTER TABLE `order_items` ADD `providerId` INT(11) NULL COMMENT 'user.id' AFTER `price`;
+ALTER TABLE `products` CHANGE `userId` `userId` INT(11) NOT NULL COMMENT 'provider id';
 
 

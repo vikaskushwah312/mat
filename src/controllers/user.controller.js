@@ -10,7 +10,7 @@ exports.getUserById = async (req, res) => {
     }
 
     const user = await User.findByPk(userId, {
-      attributes: ['id', 'firstName', 'lastName', 'email', 'notificationSetting', 'phone', 'status']
+      attributes: ['id', 'userType', 'firstName', 'lastName', 'email', 'notificationSetting', 'photo', 'status', 'phone']
     });
 
     if (!user) {
@@ -33,7 +33,7 @@ exports.getUserById = async (req, res) => {
 exports.updateUserById = async (req, res) => {
   try {
     const { userId } = req.params;
-    const { firstName, lastName, email, notificationSetting } = req.body;
+    const { firstName, lastName, email, notificationSetting, photo, status } = req.body;
 
     if (!userId) {
       return res.status(400).json({ status: 'error', message: 'User ID is required' });
@@ -50,7 +50,9 @@ exports.updateUserById = async (req, res) => {
       firstName: firstName ?? user.firstName,
       lastName: lastName ?? user.lastName,
       email: email ?? user.email,
-      notificationSetting: notificationSetting ?? user.notificationSetting
+      notificationSetting: notificationSetting ?? user.notificationSetting,
+      photo: photo ?? user.photo,
+      status: status ?? user.status,
     });
 
     return res.status(200).json({

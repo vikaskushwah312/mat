@@ -22,6 +22,26 @@ const app = express();
 // Middleware
 app.use(cors());
 
+// Serve static files from uploads directory
+const path = require('path');
+const uploadsPath = path.join(__dirname, 'uploads');
+console.log('Serving static files from:', uploadsPath);
+
+// Ensure uploads directory exists
+const fs = require('fs');
+if (!fs.existsSync(uploadsPath)) {
+  fs.mkdirSync(uploadsPath, { recursive: true });
+}
+
+// Debug middleware for static files
+app.use('/uploads', (req, res, next) => {
+  console.log('Request for static file:', req.path);
+  const filePath = path.join(uploadsPath, req.path);
+  console.log('Looking for file at:', filePath);
+  console.log('File exists:', fs.existsSync(filePath));
+  next();
+}, express.static(uploadsPath));
+
 // Parse JSON bodies
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
