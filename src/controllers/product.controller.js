@@ -250,16 +250,26 @@ exports.getAllProducts = async (req, res) => {
       brand, 
       price, 
       // maxPrice, 
-      search, 
+      search,
+      userType, 
       sortBy = 'created_at', 
       order = 'DESC' 
     } = req.query;
     const offset = (page - 1) * limit;
 
     // Build WHERE clause
-    let whereClause = `WHERE p.status = 'active' and p.userId = :userId`;
+    let whereClause = `WHERE p.status = 'active'`;
     const replacements = {};
-    replacements.userId = userId;
+
+    if (userType && userType.trim() !== "") {
+        whereClause += ` AND p.userType = :userType`;
+        replacements.userType = userType.trim();
+    }
+
+    if (userId && userId.trim() !== "" && userId.trim() !== '""') {
+      whereClause += ` AND p.userId = :userId`;
+      replacements.userId = userId;
+    }
 
     if (product_type && product_type.trim() !== "" && product_type.trim() !== '""') {
       whereClause += ` AND TRIM(p.product_type) = :product_type`;
