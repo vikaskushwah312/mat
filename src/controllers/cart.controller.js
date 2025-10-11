@@ -94,7 +94,7 @@ exports.getCartItems = async (req, res) => {
         FROM products p
         LEFT JOIN product_images pi ON pi.productId = p.id AND pi.status = 'active'
         WHERE p.id NOT IN (
-          SELECT productId FROM cart_items WHERE userId = :userId AND status = 'active'
+          SELECT productId FROM cart_items WHERE userId = :userId AND status = 'active' AND p.userType IN ('admin', 'subAdmin')
         )
         GROUP BY p.id
         ORDER BY RAND()
