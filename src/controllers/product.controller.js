@@ -259,12 +259,13 @@ exports.getAllProducts = async (req, res) => {
 
     // Build WHERE clause
     let whereClause = `WHERE p.status = 'active'`;
+    whereClause += ` AND p.userType IN ('admin', 'subAdmin')`;
     const replacements = {};
 
-    if (userType && userType.trim() !== "") {
-        whereClause += ` AND p.userType = :userType`;
-        replacements.userType = userType.trim();
-    }
+    // if (userType && ['admin', 'subAdmin'].includes(userType.trim())) {
+    //     whereClause += ` AND p.userType = :userType`;
+    //     replacements.userType = userType.trim();
+    // }
 
     if (userId && userId.trim() !== "" && userId.trim() !== '""') {
       whereClause += ` AND p.userId = :userId`;
