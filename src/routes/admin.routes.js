@@ -11,6 +11,10 @@ router.post('/products/add', adminController.addProduct);
 
 // Upload product images with form data
 router.post('/products/images', upload, adminController.uploadProductImages);
+router.post('/products/images/add', upload, adminController.uploadProductImagesAdd);
+router.post('/products/images/list', adminController.uploadProductImagesList);
+
+router.get('/users/list', adminController.getUsersByType);
 // Update product
 router.put('/products/update', adminController.updateProduct);
 // Delete product

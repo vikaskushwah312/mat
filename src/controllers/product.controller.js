@@ -10,7 +10,8 @@ exports.getAllProducts = async (req, res) => {
       const { 
         page = 1, 
         limit = 10, 
-        product_type, 
+        product_type,
+        productImageUrl,
         item,
         brand, 
         price, 
@@ -185,6 +186,7 @@ exports.getProductById = async (req, res) => {
           p.price,
           p.mrp,
           p.product_type,
+          p.productImageUrl,
           p.brand,
           p.item,
           p.status,
@@ -219,6 +221,7 @@ exports.getProductById = async (req, res) => {
         brand: product.brand,
         item: product.item,
         status: product.status,
+        productImageUrl: product.productImageUrl,
         images: product.images ? product.images.split(',') : []
       };
   
@@ -342,6 +345,7 @@ exports.getAllProducts = async (req, res) => {
         p.brand,
         p.item,
         p.status,
+        p.productImageUrl,
         GROUP_CONCAT(pi.image_url ORDER BY pi.is_primary DESC, pi.display_order ASC, pi.id ASC) AS images
       FROM products p
       LEFT JOIN product_images pi
@@ -387,6 +391,7 @@ exports.getAllProducts = async (req, res) => {
       brand: p.brand,
       item: p.item,
       status: p.status,
+      productImageUrl: p.productImageUrl,
       images: p.images ? p.images.split(',') : [] // convert comma string to array
     }));
 
@@ -418,6 +423,7 @@ exports.addProduct = async (req, res) => {
   try {
     const {
       userId,
+      productImageUrl,
       heading,
       sub_heading,
       details,
@@ -443,6 +449,7 @@ exports.addProduct = async (req, res) => {
     // Create the product
     const product = await Product.create({
       userId,
+      productImageUrl,
       heading,
       sub_heading: sub_heading || null,
       details: details || null,

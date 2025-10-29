@@ -4,6 +4,7 @@ const ProductImage = require('../models/productImage.model');
 const sequelize = require('../config/db');
 const Order = require('../models/order.model');
 const OrderItem = require('../models/orderItem.model');
+const AdminProductImage = require('../models/admin_product_images.model');
 require('dotenv').config();
 
 // Upload product images
@@ -64,6 +65,7 @@ exports.addProduct = async (req, res) => {
       const {
         userId,
         heading,
+        productImageUrl,
         sub_heading,
         details,
         price,
@@ -90,6 +92,7 @@ exports.addProduct = async (req, res) => {
       // Create the product
       const product = await Product.create({
         userId,
+        productImageUrl,
         userType:user?.userType,
         heading,
         sub_heading: sub_heading || null,
@@ -139,6 +142,7 @@ exports.updateProduct = async (req, res) => {
       const {
         productId,
         heading,
+        productImageUrl,
         sub_heading,
         details,
         price,
@@ -170,6 +174,7 @@ exports.updateProduct = async (req, res) => {
       }
   
       // Update only provided fields
+      product.productImageUrl = productImageUrl || product.productImageUrl;
       product.heading = heading || product.heading;
       product.sub_heading = sub_heading || product.sub_heading;
       product.details = details || product.details;
@@ -246,6 +251,7 @@ exports.getProductById = async (req, res) => {
           p.brand,
           p.item,
           p.status,
+          p.productImageUrl,
           GROUP_CONCAT(pi.image_url ORDER BY pi.is_primary DESC, pi.display_order ASC, pi.id ASC) AS images
         FROM products p
         LEFT JOIN product_images pi
@@ -278,6 +284,7 @@ exports.getProductById = async (req, res) => {
         brand: product.brand,
         item: product.item,
         status: product.status,
+        productImageUrl: product.productImageUrl,
         images: product.images ? product.images.split(',') : []
       };
   
@@ -402,6 +409,7 @@ exports.getAllProducts = async (req, res) => {
           p.brand,
           p.item,
           p.status,
+          p.productImageUrl,
           GROUP_CONCAT(pi.image_url ORDER BY pi.is_primary DESC, pi.display_order ASC, pi.id ASC) AS images
         FROM products p
         LEFT JOIN product_images pi
@@ -448,6 +456,7 @@ exports.getAllProducts = async (req, res) => {
         brand: p.brand,
         item: p.item,
         status: p.status,
+        productImageUrl: p.productImageUrl,
         images: p.images ? p.images.split(',') : [] // convert comma string to array
       }));
   
@@ -634,4 +643,109 @@ exports.updateOrderStatus = async (req, res) => {
       });
     }
   };
-  
+
+exports.uploadProductImagesAdd = async (req, res) => {
+  try {
+    const baseUrl = `${req.protocol}://${req.get('host')}`;
+    const userId = req.body.userId || 'default';
+    const productId = req.body.productId;
+
+    const files = req.files || [];
+
+    if (files.length === 0) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'No files were uploaded.'
+      });
+    }
+
+    const uploadedImages = files.map(file => {
+      const imageUrl = `${baseUrl}/uploads/products/image/${userId}/${file.filename}`;
+      return {
+        imageUrl,
+        userId,
+        productId
+      };
+    });
+
+    // Use bulkCreate for multiple records
+    const newImages = await AdminProductImage.bulkCreate(uploadedImages);
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Product images uploaded successfully!',
+      images: newImages
+    });
+
+  } catch (error) {
+    console.error('Upload product images error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Failed to upload product images',
+      ...(process.env.NODE_ENV === 'development' && { error: error.message })
+    });
+  }
+};
+
+exports.uploadProductImagesList = async (req, res) => {
+  try {
+    // Fetch all images, only select the imageUrl field
+    const images = await AdminProductImage.findAll({
+      attributes: ['imageUrl'],
+      where: { active: 1 } // optional: only active images
+    });
+
+    // Extract only URLs from the result
+    const imageUrls = images.map(img => img.imageUrl);
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Product images fetched successfully',
+      data: imageUrls
+    });
+
+  } catch (error) {
+    console.error('Error fetching product images:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Failed to fetch product images',
+      ...(process.env.NODE_ENV === 'development' && { error: error.message })
+    });
+  }
+};
+
+exports.getUsersByType = async (req, res) => {
+  try {
+    const { userType } = req.query; // Get userType from query parameters
+
+    // Validate userType
+    const allowedTypes = ['customer', 'vendor', 'admin', 'subAdmin'];
+    if (!userType || !allowedTypes.includes(userType)) {
+      return res.status(400).json({
+        status: 'error',
+        message: `Invalid or missing userType. Allowed types: ${allowedTypes.join(', ')}`,
+      });
+    }
+
+    // Fetch users by userType
+    const users = await User.findAll({
+      where: { userType },
+      attributes: ['id', 'userType', 'firstName', 'lastName', 'email', 'phone', 'photo', 'notificationSetting', 'status'],
+      order: [['created_at', 'DESC']], // optional: order by creation date
+    });
+
+    res.status(200).json({
+      status: 'success',
+      message: `Users with type '${userType}' fetched successfully`,
+      data: users,
+    });
+
+  } catch (error) {
+    console.error('Error fetching users by type:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Failed to fetch users',
+      ...(process.env.NODE_ENV === 'development' && { error: error.message }),
+    });
+  }
+};

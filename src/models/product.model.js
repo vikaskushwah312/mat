@@ -15,6 +15,10 @@ const Product = sequelize.define('Product', {
     type: DataTypes.STRING(255),
     allowNull: false,
   },
+  productImageUrl: {
+    type: DataTypes.STRING(255),
+    allowNull: true,
+  },
   sub_heading: {
     type: DataTypes.STRING(255),
     allowNull: true,
