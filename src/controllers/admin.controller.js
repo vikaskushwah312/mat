@@ -660,7 +660,7 @@ exports.uploadProductImagesAdd = async (req, res) => {
     }
 
     const uploadedImages = files.map(file => {
-      const imageUrl = `${baseUrl}/uploads/products/image/${userId}/${file.filename}`;
+      const imageUrl = `${baseUrl}/uploads/products/${userId}/${file.filename}`;
       return {
         imageUrl,
         userId,
