@@ -245,6 +245,15 @@ exports.checkout = async (req, res) => {
                   product_type: product.product_type
               }
           }, { transaction: t });
+
+          // Remove item from cart
+          console.log(userId, item.productId)
+          const cartItem = await CartItem.findOne({ where: { userId, productId: item.productId, status: 'active' } });
+          console.log("cartItem  ", cartItem)
+          if (cartItem) {
+              cartItem.status = 'ordered';
+              await cartItem.save();
+          }
       }
 
       await t.commit();

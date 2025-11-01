@@ -68,13 +68,23 @@ exports.getAllProducts = async (req, res) => {
         whereClause += ` AND p.price <= :price`;
         replacements.price = parseFloat(price);
       }
+      console.log("search------------------", search)
+      if (search && !['""', "''", 'undefined', 'null'].includes(search.trim())) {
+        // Remove leading and trailing quotes
+        console.log("in side the search opton ")
+        const cleanSearch = search.trim().replace(/^['"]+|['"]+$/g, ''); // remove quotes
+        whereClause += ` AND (
+          LOWER(p.heading) LIKE :search OR 
+          LOWER(p.sub_heading) LIKE :search OR 
+          LOWER(p.details) LIKE :search
+        )`;
+        replacements.search = `%${cleanSearch.toLowerCase()}%`;
+      }
+      console.log("🔍 Search raw:", search);
+console.log("🧹 Clean search:", replacements.search);
+console.log("🧱 Final SQL WHERE:", whereClause);
 
-      console.log("whereClause", whereClause);
-      console.log("replacements", replacements);
-      // if (search) {
-      //   whereClause += ` AND (p.heading LIKE :search OR p.sub_heading LIKE :search OR p.details LIKE :search)`;
-      //   replacements.search = `%${search}%`;
-      // }
+
   
       // Sorting
       let orderBy = `ORDER BY p.created_at DESC`;
@@ -318,12 +328,17 @@ exports.getAllProducts = async (req, res) => {
       replacements.price = parseFloat(price);
     }
 
-    console.log("whereClause", whereClause);
-    console.log("replacements", replacements);
-    // if (search) {
-    //   whereClause += ` AND (p.heading LIKE :search OR p.sub_heading LIKE :search OR p.details LIKE :search)`;
-    //   replacements.search = `%${search}%`;
-    // }
+    if (search && !['""', "''", 'undefined', 'null'].includes(search.trim())) {
+        // Remove leading and trailing quotes
+        console.log("in side the search opton ")
+        const cleanSearch = search.trim().replace(/^['"]+|['"]+$/g, ''); // remove quotes
+        whereClause += ` AND (
+          LOWER(p.heading) LIKE :search OR 
+          LOWER(p.sub_heading) LIKE :search OR 
+          LOWER(p.details) LIKE :search
+        )`;
+        replacements.search = `%${cleanSearch.toLowerCase()}%`;
+      }
 
     // Sorting
     let orderBy = `ORDER BY p.created_at DESC`;

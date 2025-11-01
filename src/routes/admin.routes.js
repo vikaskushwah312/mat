@@ -23,5 +23,6 @@ router.put('/products/update', adminController.updateProduct);
 router.get('/orders', adminController.getAllOrders);
 
 router.put('/orders/update/:orderId', adminController.updateOrderStatus);
+router.put('/dashbard', adminController.updateOrderStatus);
 
 module.exports = router;
