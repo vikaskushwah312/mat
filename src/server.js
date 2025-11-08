@@ -17,6 +17,8 @@ const authAdminRoutes = require('./routes/authAdmin.routes');
 const adminRoutes = require('./routes/admin.routes');
 const userFavoriteRoutes = require('./routes/favorite.routes');
 
+
+
 // Load environment variables
 require('dotenv').config();
 
@@ -79,6 +81,7 @@ app.use('/api/business-details', businessDetailsRoutes);
 app.use('/api/admin/auth', authAdminRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/favorite', userFavoriteRoutes);
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);

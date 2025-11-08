@@ -2,6 +2,9 @@ const express = require('express');
 const router = express.Router();
 const adminController = require('../controllers/admin.controller');
 const { uploadProductImages: upload } = require('../config/multerConfig');
+const categoriesController = require('../controllers/category.controller');
+const subcategoryController = require('../controllers/subcategory.controller');
+
 
 // Public routes
 router.get('/products/', adminController.getAllProducts);
@@ -24,5 +27,28 @@ router.get('/orders', adminController.getAllOrders);
 
 router.put('/orders/update/:orderId', adminController.updateOrderStatus);
 router.put('/dashbard', adminController.updateOrderStatus);
+
+// Mount category routes
+// CRUD
+router.post('/category', categoriesController.createCategory);
+router.get('/category', categoriesController.listCategories);
+router.get('/category/:id', categoriesController.getCategory);
+router.put('/category/:id', categoriesController.updateCategory);
+
+// Soft delete (recommended)
+router.patch('/category/:id/deactivate', categoriesController.deactivateCategory);
+
+// Hard delete
+router.delete('/category/:id', categoriesController.deleteCategory);
+
+
+
+router.post('/subcategory', subcategoryController.createSubcategory);
+router.get('/subcategory', subcategoryController.listSubcategories);
+router.get('/subcategory/:id', subcategoryController.getSubcategory);
+router.put('/subcategory/:id', subcategoryController.updateSubcategory);
+router.patch('/subcategory/:id/deactivate', subcategoryController.deactivateSubcategory);
+router.delete('/subcategory/:id', subcategoryController.deleteSubcategory);
+router.get('/subcategory/:category_name', subcategoryController.getSubcategoriesByCategoryName);
 
 module.exports = router;
