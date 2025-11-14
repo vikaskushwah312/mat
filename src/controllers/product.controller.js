@@ -3,6 +3,7 @@ const { Op } = require('sequelize');
 const Product = require('../models/product.model');
 const ProductImage = require('../models/productImage.model');
 const sequelize = require('../config/db');
+const User = require('../models/user.model');
 
 // Get all products
 exports.getAllProducts = async (req, res) => {
@@ -102,10 +103,23 @@ console.log("🧱 Final SQL WHERE:", whereClause);
           p.details AS description,
           p.price,
           p.mrp,
+          p.specification,
           p.product_type,
           p.brand,
           p.item,
           p.status,
+          p.productImageUrl,
+          p.measure,
+          p.selling_measure,
+          p.measure_term,
+          p.measure_value,
+          p.selling_measure_rate,
+          p.unit_mrp_incl_gst,
+          p.discount_rule,
+          p.discount_value,
+          p.delivery_time,
+          p.logistics_rule,
+          p.gst,
           GROUP_CONCAT(pi.image_url ORDER BY pi.is_primary DESC, pi.display_order ASC, pi.id ASC) AS images
         FROM products p
         LEFT JOIN product_images pi
@@ -147,10 +161,23 @@ console.log("🧱 Final SQL WHERE:", whereClause);
         price: parseFloat(p.price),
         mrp: parseFloat(p.mrp || p.price),
         discount: p.mrp > p.price ? Math.round(((p.mrp - p.price) / p.mrp) * 100) : 0,
+        specification: p.specification,
         product_type: p.product_type,
         brand: p.brand,
         item: p.item,
         status: p.status,
+        productImageUrl: p.productImageUrl,
+        measure: p.measure,
+        selling_measure: p.selling_measure,
+        measure_term: p.measure_term,
+        measure_value: p.measure_value,
+        selling_measure_rate: p.selling_measure_rate,
+        unit_mrp_incl_gst: p.unit_mrp_incl_gst,
+        discount_rule: p.discount_rule,
+        discount_value: p.discount_value,
+        delivery_time: p.delivery_time,
+        logistics_rule: p.logistics_rule,
+        gst: p.gst,
         images: p.images ? p.images.split(',') : [] // convert comma string to array
       }));
   
@@ -200,6 +227,18 @@ exports.getProductById = async (req, res) => {
           p.brand,
           p.item,
           p.status,
+          p.specification,
+          p.measure,
+          p.selling_measure,
+          p.measure_term,
+          p.measure_value,
+          p.selling_measure_rate,
+          p.unit_mrp_incl_gst,
+          p.discount_rule,
+          p.discount_value,
+          p.delivery_time,
+          p.logistics_rule,
+          p.gst,
           GROUP_CONCAT(pi.image_url ORDER BY pi.is_primary DESC, pi.display_order ASC, pi.id ASC) AS images
         FROM products p
         LEFT JOIN product_images pi
@@ -232,6 +271,18 @@ exports.getProductById = async (req, res) => {
         item: product.item,
         status: product.status,
         productImageUrl: product.productImageUrl,
+        specification: product.specification,
+        measure: product.measure,
+        selling_measure: product.selling_measure,
+        measure_term: product.measure_term,
+        measure_value: product.measure_value,
+        selling_measure_rate: product.selling_measure_rate,
+        unit_mrp_incl_gst: product.unit_mrp_incl_gst,
+        discount_rule: product.discount_rule,
+        discount_value: product.discount_value,
+        delivery_time: product.delivery_time,
+        logistics_rule: product.logistics_rule,
+        gst: product.gst,
         images: product.images ? product.images.split(',') : []
       };
   
@@ -450,6 +501,18 @@ exports.addProduct = async (req, res) => {
       item,
       status = 'active',
       stock_quantity = 0,
+      // new fields
+      measure,
+      selling_measure,
+      measure_term,
+      measure_value,
+      selling_measure_rate,
+      unit_mrp_incl_gst,
+      discount_rule,
+      discount_value,
+      delivery_time,
+      logistics_rule,
+      gst,
       images = [] // optional array of image URLs
     } = req.body;
 
@@ -460,11 +523,12 @@ exports.addProduct = async (req, res) => {
         message: 'Required fields: userId, heading, price, mrp, product_type, brand, item'
       });
     }
-
+    const user = await User.findByPk(userId);
     // Create the product
     const product = await Product.create({
       userId,
       productImageUrl,
+      userType:user?.userType,
       heading,
       sub_heading: sub_heading || null,
       details: details || null,
@@ -475,7 +539,19 @@ exports.addProduct = async (req, res) => {
       brand,
       item,
       status,
-      stock_quantity
+      stock_quantity,
+      // new fields
+      measure,
+      selling_measure,
+      measure_term,
+      measure_value,
+      selling_measure_rate,
+      unit_mrp_incl_gst,
+      discount_rule: discount_rule || 'percentage',
+      discount_value,
+      delivery_time,
+      logistics_rule,
+      gst
     });
 
     // If images array is provided, save them in ProductImage table

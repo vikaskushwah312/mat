@@ -76,6 +76,17 @@ exports.addProduct = async (req, res) => {
         item,
         status = 'active',
         stock_quantity = 0,
+        measure,
+        selling_measure,
+        measure_term,
+        measure_value,
+        selling_measure_rate,
+        unit_mrp_incl_gst,
+        discount_rule,
+        discount_value,
+        delivery_time,
+        logistics_rule,
+        gst,
         images = [] // optional array of image URLs
       } = req.body;
   
@@ -104,7 +115,18 @@ exports.addProduct = async (req, res) => {
         brand,
         item,
         status,
-        stock_quantity
+        stock_quantity,
+        measure,
+        selling_measure,
+        measure_term,
+        measure_value,
+        selling_measure_rate,
+        unit_mrp_incl_gst,
+        discount_rule: discount_rule || 'percentage',
+        discount_value,
+        delivery_time,
+        logistics_rule,
+        gst
       });
   
       // If images array is provided, save them in ProductImage table
@@ -153,6 +175,17 @@ exports.updateProduct = async (req, res) => {
         item,
         status,
         stock_quantity,
+        measure,
+        selling_measure,
+        measure_term,
+        measure_value,
+        selling_measure_rate,
+        unit_mrp_incl_gst,
+        discount_rule,
+        discount_value,
+        delivery_time,
+        logistics_rule,
+        gst,
         images = []
       } = req.body;
   
@@ -191,6 +224,18 @@ exports.updateProduct = async (req, res) => {
         typeof stock_quantity !== 'undefined'
           ? stock_quantity
           : product.stock_quantity;
+      // new fields
+      if (typeof measure !== 'undefined') product.measure = measure;
+      if (typeof selling_measure !== 'undefined') product.selling_measure = selling_measure;
+      if (typeof measure_term !== 'undefined') product.measure_term = measure_term;
+      if (typeof measure_value !== 'undefined') product.measure_value = measure_value;
+      if (typeof selling_measure_rate !== 'undefined') product.selling_measure_rate = selling_measure_rate;
+      if (typeof unit_mrp_incl_gst !== 'undefined') product.unit_mrp_incl_gst = unit_mrp_incl_gst;
+      if (typeof discount_rule !== 'undefined') product.discount_rule = discount_rule || 'percentage';
+      if (typeof discount_value !== 'undefined') product.discount_value = discount_value;
+      if (typeof delivery_time !== 'undefined') product.delivery_time = delivery_time;
+      if (typeof logistics_rule !== 'undefined') product.logistics_rule = logistics_rule;
+      if (typeof gst !== 'undefined') product.gst = gst;
   
       await product.save();
   
@@ -252,6 +297,17 @@ exports.getProductById = async (req, res) => {
           p.item,
           p.status,
           p.productImageUrl,
+          p.measure,
+          p.selling_measure,
+          p.measure_term,
+          p.measure_value,
+          p.selling_measure_rate,
+          p.unit_mrp_incl_gst,
+          p.discount_rule,
+          p.discount_value,
+          p.delivery_time,
+          p.logistics_rule,
+          p.gst,
           GROUP_CONCAT(pi.image_url ORDER BY pi.is_primary DESC, pi.display_order ASC, pi.id ASC) AS images
         FROM products p
         LEFT JOIN product_images pi
@@ -285,6 +341,17 @@ exports.getProductById = async (req, res) => {
         item: product.item,
         status: product.status,
         productImageUrl: product.productImageUrl,
+        measure: product.measure,
+        selling_measure: product.selling_measure,
+        measure_term: product.measure_term,
+        measure_value: product.measure_value,
+        selling_measure_rate: product.selling_measure_rate,
+        unit_mrp_incl_gst: product.unit_mrp_incl_gst,
+        discount_rule: product.discount_rule,
+        discount_value: product.discount_value,
+        delivery_time: product.delivery_time,
+        logistics_rule: product.logistics_rule,
+        gst: product.gst,
         images: product.images ? product.images.split(',') : []
       };
   
@@ -410,6 +477,17 @@ exports.getAllProducts = async (req, res) => {
           p.item,
           p.status,
           p.productImageUrl,
+          p.measure,
+          p.selling_measure,
+          p.measure_term,
+          p.measure_value,
+          p.selling_measure_rate,
+          p.unit_mrp_incl_gst,
+          p.discount_rule,
+          p.discount_value,
+          p.delivery_time,
+          p.logistics_rule,
+          p.gst,
           GROUP_CONCAT(pi.image_url ORDER BY pi.is_primary DESC, pi.display_order ASC, pi.id ASC) AS images
         FROM products p
         LEFT JOIN product_images pi
@@ -457,6 +535,24 @@ exports.getAllProducts = async (req, res) => {
         item: p.item,
         status: p.status,
         productImageUrl: p.productImageUrl,
+        measure: p.measure,
+        selling_measure: p.selling_measure,
+        measure_term: p.measure_term,
+        measure_value: p.measure_value,
+        selling_measure_rate: p.selling_measure_rate,
+        unit_mrp_incl_gst: p.unit_mrp_incl_gst,
+        discount_rule: p.discount_rule,
+        discount_value: p.discount_value,
+        delivery_time: p.delivery_time,
+        logistics_rule: p.logistics_rule,
+        gst: p.gst,
+        selling_price: p.selling_price,
+        selling_price_incl_gst: p.selling_price_incl_gst,
+        selling_price_incl_gst_with_discount: p.selling_price_incl_gst_with_discount,
+        selling_price_with_discount: p.selling_price_with_discount,
+        selling_price_with_gst: p.selling_price_with_gst,
+        selling_price_with_gst_with_discount: p.selling_price_with_gst_with_discount,
+        selling_price_with_discount_and_gst: p.selling_price_with_discount_and_gst,
         images: p.images ? p.images.split(',') : [] // convert comma string to array
       }));
   

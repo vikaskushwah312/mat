@@ -18,7 +18,6 @@ const adminRoutes = require('./routes/admin.routes');
 const userFavoriteRoutes = require('./routes/favorite.routes');
 
 
-
 // Load environment variables
 require('dotenv').config();
 
