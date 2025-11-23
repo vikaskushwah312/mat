@@ -6,7 +6,7 @@ const sequelize = new Sequelize(
   // process.env.DB_USER,
   // process.env.DB_PASSWORD,
   "mat-database",
-  "admin",
+  "matadmin",
   "Xu?UrU0j4}mUD7ofV",
 
   {
