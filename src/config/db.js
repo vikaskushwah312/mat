@@ -5,14 +5,14 @@ const sequelize = new Sequelize(
   // process.env.DB_NAME,
   // process.env.DB_USER,
   // process.env.DB_PASSWORD,
-  "matapi",
+  "mat-database",
   "admin",
-  "Admin#09011998",
+  "Xu?UrU0j4}mUD7ofV",
 
   {
     // host: process.env.DB_HOST,
     // port: process.env.DB_PORT,
-    host: "matapi.cluster-cdms0o6kyl46.ap-south-1.rds.amazonaws.com",
+    host: "mat-database.cdms0o6kyl46.ap-south-1.rds.amazonaws.com",
     port: 3306,
 
     dialect: 'mysql',
