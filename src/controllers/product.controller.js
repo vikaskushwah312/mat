@@ -120,6 +120,8 @@ console.log("🧱 Final SQL WHERE:", whereClause);
           p.delivery_time,
           p.logistics_rule,
           p.gst,
+          p.delivery_charges,
+          p.coupon_code_apply,
           GROUP_CONCAT(pi.image_url ORDER BY pi.is_primary DESC, pi.display_order ASC, pi.id ASC) AS images
         FROM products p
         LEFT JOIN product_images pi
@@ -178,6 +180,8 @@ console.log("🧱 Final SQL WHERE:", whereClause);
         delivery_time: p.delivery_time,
         logistics_rule: p.logistics_rule,
         gst: p.gst,
+        delivery_charges: p.delivery_charges,
+        coupon_code_apply: p.coupon_code_apply,
         images: p.images ? p.images.split(',') : [] // convert comma string to array
       }));
   
@@ -239,6 +243,8 @@ exports.getProductById = async (req, res) => {
           p.delivery_time,
           p.logistics_rule,
           p.gst,
+          p.delivery_charges,
+          p.coupon_code_apply,
           GROUP_CONCAT(pi.image_url ORDER BY pi.is_primary DESC, pi.display_order ASC, pi.id ASC) AS images
         FROM products p
         LEFT JOIN product_images pi
@@ -283,6 +289,8 @@ exports.getProductById = async (req, res) => {
         delivery_time: product.delivery_time,
         logistics_rule: product.logistics_rule,
         gst: product.gst,
+        delivery_charges: product.delivery_charges,
+        coupon_code_apply: product.coupon_code_apply,
         images: product.images ? product.images.split(',') : []
       };
   
@@ -513,6 +521,8 @@ exports.addProduct = async (req, res) => {
       delivery_time,
       logistics_rule,
       gst,
+      delivery_charges,
+      coupon_code_apply,
       images = [] // optional array of image URLs
     } = req.body;
 
@@ -551,7 +561,9 @@ exports.addProduct = async (req, res) => {
       discount_value,
       delivery_time,
       logistics_rule,
-      gst
+      gst,
+      delivery_charges,
+      coupon_code_apply,
     });
 
     // If images array is provided, save them in ProductImage table

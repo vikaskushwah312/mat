@@ -87,6 +87,8 @@ exports.addProduct = async (req, res) => {
         delivery_time,
         logistics_rule,
         gst,
+        delivery_charges,
+        coupon_code_apply,
         images = [] // optional array of image URLs
       } = req.body;
   
@@ -97,14 +99,15 @@ exports.addProduct = async (req, res) => {
           message: 'Required fields: userId, heading, price, mrp, product_type, brand, item'
         });
       }
-      
+      console.log("req.body", req.body);
       const user = await User.findByPk(userId);
+      console.log("user", user);
 
       // Create the product
       const product = await Product.create({
         userId,
         productImageUrl,
-        userType:user?.userType,
+        userType:user?.userType || 'admin',
         heading,
         sub_heading: sub_heading || null,
         details: details || null,
@@ -126,7 +129,9 @@ exports.addProduct = async (req, res) => {
         discount_value,
         delivery_time,
         logistics_rule,
-        gst
+        gst,
+        delivery_charges,
+        coupon_code_apply,
       });
   
       // If images array is provided, save them in ProductImage table
@@ -186,6 +191,8 @@ exports.updateProduct = async (req, res) => {
         delivery_time,
         logistics_rule,
         gst,
+        delivery_charges,
+        coupon_code_apply,
         images = []
       } = req.body;
   
@@ -236,6 +243,8 @@ exports.updateProduct = async (req, res) => {
       if (typeof delivery_time !== 'undefined') product.delivery_time = delivery_time;
       if (typeof logistics_rule !== 'undefined') product.logistics_rule = logistics_rule;
       if (typeof gst !== 'undefined') product.gst = gst;
+      if (typeof delivery_charges !== 'undefined') product.delivery_charges = delivery_charges;
+      if (typeof coupon_code_apply !== 'undefined') product.coupon_code_apply = coupon_code_apply;
   
       await product.save();
   
@@ -308,6 +317,8 @@ exports.getProductById = async (req, res) => {
           p.delivery_time,
           p.logistics_rule,
           p.gst,
+          p.delivery_charges,
+          p.coupon_code_apply,
           GROUP_CONCAT(pi.image_url ORDER BY pi.is_primary DESC, pi.display_order ASC, pi.id ASC) AS images
         FROM products p
         LEFT JOIN product_images pi
@@ -352,6 +363,8 @@ exports.getProductById = async (req, res) => {
         delivery_time: product.delivery_time,
         logistics_rule: product.logistics_rule,
         gst: product.gst,
+        delivery_charges: product.delivery_charges,
+        coupon_code_apply: product.coupon_code_apply,
         images: product.images ? product.images.split(',') : []
       };
   
@@ -488,6 +501,8 @@ exports.getAllProducts = async (req, res) => {
           p.delivery_time,
           p.logistics_rule,
           p.gst,
+          p.delivery_charges,
+          p.coupon_code_apply,
           GROUP_CONCAT(pi.image_url ORDER BY pi.is_primary DESC, pi.display_order ASC, pi.id ASC) AS images
         FROM products p
         LEFT JOIN product_images pi
@@ -546,6 +561,8 @@ exports.getAllProducts = async (req, res) => {
         delivery_time: p.delivery_time,
         logistics_rule: p.logistics_rule,
         gst: p.gst,
+        delivery_charges: p.delivery_charges,
+        coupon_code_apply: p.coupon_code_apply,
         selling_price: p.selling_price,
         selling_price_incl_gst: p.selling_price_incl_gst,
         selling_price_incl_gst_with_discount: p.selling_price_incl_gst_with_discount,

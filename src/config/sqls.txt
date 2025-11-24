@@ -126,4 +126,7 @@ DROP TABLE `mat`.`gstn`"
 
 ALTER TABLE `orders` CHANGE `status` `status` ENUM('pending','processing','shipped','delivered','cancelled','orderConfirmed') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'pending';
 
+24-11-2025
+ALTER TABLE `products` ADD `delivery_charges` VARCHAR(250) NULL DEFAULT NULL AFTER `gst`, ADD `coupon_code_apply` VARCHAR(250) NULL DEFAULT NULL AFTER `delivery_charges`;
+
 

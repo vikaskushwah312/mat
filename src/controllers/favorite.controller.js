@@ -1,5 +1,5 @@
 const Favorite = require('../models/favorite.model');
-const { sequelize } = require('../config/db');
+const sequelize = require('../config/db');
 
 // Add a product to favorites
 exports.addFavorite = async (req, res) => {
@@ -52,7 +52,56 @@ exports.getFavorites = async (req, res) => {
       return res.status(400).json({ status: 'error', message: 'userId is required' });
     }
 
-    const favorites = await Favorite.findAll({ where: { userId } });
+    // const favorites = await Favorite.findAll({ where: { userId } });
+    const query = `SELECT 
+        f.id,
+        f.userId,
+        f.productId,
+        f.created_at,
+        f.updated_at,
+        p.id,
+        p.userId,
+        p.heading AS name,
+        p.sub_heading,
+        p.details AS description,
+        p.price,
+        p.mrp,
+        p.product_type,
+        p.productImageUrl,
+        p.brand,
+        p.item,
+        p.status,
+        p.specification,
+        p.measure,
+        p.selling_measure,
+        p.measure_term,
+        p.measure_value,
+        p.selling_measure_rate,
+        p.unit_mrp_incl_gst,
+        p.discount_rule,
+        p.discount_value,
+        p.delivery_time,
+        p.logistics_rule,
+        p.gst,
+        p.delivery_charges,
+        p.coupon_code_apply,
+        GROUP_CONCAT(pi.image_url ORDER BY pi.is_primary DESC, pi.display_order ASC, pi.id ASC) AS images
+      FROM favorites f
+      INNER JOIN products p ON p.id = f.productId
+      LEFT JOIN product_images pi 
+            ON pi.productId = p.id 
+            AND pi.status = 'active'
+      WHERE f.userId = :userId
+        AND p.status = 'active'
+      GROUP BY f.id, p.id
+    `;
+
+    const favorites = await sequelize.query(query, {
+      replacements: { userId },
+      type: sequelize.QueryTypes.SELECT
+    });
+
+    
     res.status(200).json({ status: 'success', favorites });
   } catch (error) {
     console.error('Get favorites error:', error);

@@ -113,6 +113,14 @@ const Product = sequelize.define('Product', {
     type: DataTypes.STRING(255),
     allowNull: true,
   },
+  delivery_charges: {
+    type: DataTypes.STRING(255),
+    allowNull: true,
+  },
+  coupon_code_apply: {
+    type: DataTypes.STRING(255),
+    allowNull: true,
+  },
   logistics_rule: {
     type: DataTypes.STRING(255),
     allowNull: true,
