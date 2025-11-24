@@ -12,7 +12,7 @@ const sequelize = new Sequelize(
   {
     // host: process.env.DB_HOST,
     // port: process.env.DB_PORT,
-    host: "mat-database.cdms0o6kyl46.ap-south-1.rds.amazonaws.com",
+    host: "matdatabase.cdms0o6kyl46.ap-south-1.rds.amazonaws.com",
     port: 3306,
 
     dialect: 'mysql',
