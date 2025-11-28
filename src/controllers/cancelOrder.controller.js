@@ -130,14 +130,14 @@ exports.getAllCancelOrders = async (req, res) => {
     });
 
     const orderItemsWithImages = orderItems.map(oi => {
-      const product = JSON.parse(oi.product);
+      const product = typeof oi.product === 'string' ? JSON.parse(oi.product) : oi.product;
       product.images = productImageMap[oi.productId] || [];
       return { ...oi, product };
     });
 
     // Merge orderItems into orders
     const finalData = cancelOrders.map(co => {
-      const orderObj = JSON.parse(co.order_info);
+      const orderObj = typeof co.order_info === 'string' ? JSON.parse(co.order_info) : co.order_info;
       orderObj.orderItems = orderItemsWithImages.filter(oi => oi.orderId === co.orderId);
       return { ...co, order: orderObj };
     });
@@ -157,10 +157,6 @@ exports.getAllCancelOrders = async (req, res) => {
     });
   }
 };
-
-
-
-
 //Add a cancel order request
 exports.addCancelOrder = async (req, res) => {
   try {
