@@ -22,8 +22,8 @@ const CancelOrder = sequelize.define('CancelOrder', {
     allowNull: true
   },
   status: {
-    type: DataTypes.ENUM('pending','approved','rejected'),
-    defaultValue: 'pending',
+    type: DataTypes.ENUM('pending','approved','rejected', 'cancelled'),
+    defaultValue: 'cancelled',
     allowNull: false
   },
   cancelled_at: {
