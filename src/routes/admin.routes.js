@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const adminController = require('../controllers/admin.controller');
-const { uploadProductImages: upload } = require('../config/multerConfig');
+const { uploadProductImages: upload, uploadExcel } = require('../config/multerConfig');
 const categoriesController = require('../controllers/category.controller');
 const subcategoryController = require('../controllers/subcategory.controller');
 
@@ -12,6 +12,8 @@ router.get('/products/:id', adminController.getProductById);
 // // Add product
 router.post('/products/add', adminController.addProduct);
 
+router.post('/products/add/bulke', uploadExcel, adminController.addBulkeProduct);
+
 // Upload product images with form data
 router.post('/products/images', upload, adminController.uploadProductImages);
 router.post('/products/images/add', upload, adminController.uploadProductImagesAdd);
@@ -21,7 +23,7 @@ router.get('/users/list', adminController.getUsersByType);
 // Update product
 router.put('/products/update', adminController.updateProduct);
 // Delete product
-// router.delete('/delete/:id', productController.deleteProductById);
+router.delete('/products/delete/:id', adminController.deleteProductById);
 
 router.get('/orders', adminController.getAllOrders);
 

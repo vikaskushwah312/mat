@@ -644,3 +644,19 @@ exports.uploadProductImages = async (req, res) => {
     });
   }
 };
+
+exports.deleteProductById = async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    const product = await Product.findByPk(id);
+    if (!product) return res.status(404).json({ error: 'Product not found' });
+
+    await product.destroy();
+    return res.json({ success: true, message: 'Product deleted successfully' });
+  } catch (error) {
+    res.status(500).json({
+      status: 'error',
+      message: 'Something went wrong',
+    });
+  }
+}

@@ -5,6 +5,10 @@ const sequelize = require('../config/db');
 const Order = require('../models/order.model');
 const OrderItem = require('../models/orderItem.model');
 const AdminProductImage = require('../models/admin_product_images.model');
+const Category = require('../models/category.model');
+const Subcategory = require('../models/subcategory.model');
+const XLSX = require('xlsx');
+const fs = require('fs').promises;
 require('dotenv').config();
 
 // Upload product images
@@ -58,6 +62,130 @@ exports.uploadProductImages = async (req, res) => {
     }
   };
 
+
+//Add Bulke Product
+exports.addBulkeProduct = async (req, res) => {
+    try {
+
+      if (!req.file) {
+        return res.status(400).json({ message: 'Excel file is required' });
+      }
+      const userId = req.body.userId || 'default';
+      const filePath = req.file.path; // full path of uploaded file
+      const workbook = XLSX.readFile(filePath);
+      const sheetName = workbook.SheetNames[0];
+      const sheet = workbook.Sheets[sheetName];
+      const rows = XLSX.utils.sheet_to_json(sheet);
+      // console.log("filePath", filePath);
+      // console.log("workbook", workbook);
+      // console.log("sheetName", sheetName);
+      // console.log("sheet", sheet);
+      //console.log("rows", rows);
+      // console.log("rows.length", rows.length);
+      // console.log("userId", userId);
+      
+
+      if (rows.length === 0) {
+        return res.status(400).json({ message: 'No data found in the Excel file' });
+      }
+
+      for (const row of rows) {
+        const product_type = row["Category"];
+        const subcategory_name = row["Sub Category"];
+        const specification = { 
+          "Sub Variant Title": row["Sub Variant Title"],
+          "Sub Variant Value": row["Sub Variant Value"],
+          "Sub Variant Title_1": row["Sub Variant Title_1"],
+          "Sub Variant Value_1": row["Sub Variant Value_1"],
+          "Sub Variant Title_2": row["Sub Variant Title_2"],
+          };
+        //check if category already exists
+        const existing = await Category.findOne({ where: { name: product_type } });
+        //if category does not exist, create it
+        if (!existing) await Category.create({ name: product_type, description: "", status: "ACTIVE" });
+
+        //check if subcategory already exists
+        const subcategory = await Subcategory.findOne({
+            where: {
+              category_name: product_type,
+              name: subcategory_name
+            }
+          });
+        //if subcategory does not exist, create it
+        if (!subcategory) await Subcategory.create({
+          category_name: product_type,
+          name: subcategory_name,
+          description: "",
+          status: "ACTIVE"
+        });
+        const user = await User.findByPk(userId);
+
+      //   return res.status(200).json({
+      //   status: 'success',
+      //   message: 'Bulke Product added successfully',
+      //   rows: rows.length,
+      //   data: rows
+      // });
+        // Create the product
+      const product = await Product.create({
+        userId,
+        productImageUrl:row["IMAGES  31 Images left"],
+        userType:user?.userType || 'admin',
+        heading:row["Product Name"],
+        sub_heading: row["Sub Product Name"] || null,
+        details: row["Product Description"] || null,
+        price:row["Price after discount"],
+        mrp :row["Buying Price"] || null,
+        specification: specification ? JSON.stringify(specification) : null,
+        product_type,
+        brand:row["Brand"],
+        item:row["Variant Value"],
+        status:row["Status"] || "ACTIVE",
+        stock_quantity:row["Pack of"],
+        measure:row["Measure"],
+        selling_measure:row["Selling Measure"],
+        measure_term:row["Measure Term"],
+        measure_value:row["Measure Value"],
+        selling_measure_rate:row["Selling Measure Rate"],
+        unit_mrp_incl_gst:row["MRP (Incl GST)            125 MRP Entries left"],
+        discount_rule: row["Discount Rule"] || 'percentage',
+        discount_value:row["Dealer Discount"],
+        delivery_time:row["Delivery Time"],
+        logistics_rule:row["Logistics Rule"],
+        gst:row["GST"],
+        delivery_charges:row["Delivery Charges"],
+        coupon_code_apply:row["Coupon Code Apply"] || "No",
+      });
+
+
+        if (row["IMAGES  31 Images left"] != '') {
+          const imageData = {
+            productId: product.id,
+            image_url: row["IMAGES  31 Images left"],
+            is_primary: false, // first image primary
+            display_order: 1,
+            status: 'active'
+          };
+          await ProductImage.bulkCreate(imageData);
+        }
+      }
+
+      return res.status(200).json({
+        status: 'success',
+        message: 'Bulke Product added successfully',
+        rows: rows.length,
+        data: rows
+      });
+
+    } catch (error) {
+      console.error('Add product error:', error);
+      res.status(500).json({
+        status: 'error',
+        message: 'Failed to add product',
+        ...(process.env.NODE_ENV === 'development' && { error: error.message })
+      });
+    }
+};
 
   // Add a new product
 exports.addProduct = async (req, res) => {
@@ -862,3 +990,21 @@ exports.getUsersByType = async (req, res) => {
     });
   }
 };
+
+
+
+exports.deleteProductById = async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    const product = await Product.findByPk(id);
+    if (!product) return res.status(404).json({ error: 'Product not found' });
+
+    await product.destroy();
+    return res.json({ success: true, message: 'Product deleted successfully' });
+  } catch (error) {
+    res.status(500).json({
+      status: 'error',
+      message: 'Something went wrong',
+    });
+  }
+}

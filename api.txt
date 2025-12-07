@@ -11,3 +11,16 @@ Get single product:
 GET /api/products/123
 
 http://13.234.59.130:3000/api/auth/verify-otp
+
+Host: mat-database.cdms0o6kyl46.ap-south-1.rds.amazonaws.com
+User: matadmin
+DB: mat-database
+Password: Xu?UrU0j4}mUD7ofV
+
+Host: matdatabase.cdms0o6kyl46.ap-south-1.rds.amazonaws.com
+User: matadmin
+DB: mat-database
+Password: Xu?UrU0j4}mUD7ofV
+
+
+

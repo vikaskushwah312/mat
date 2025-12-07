@@ -63,7 +63,41 @@ const uploadProductImages = multer({
   }
 }).array('images', 10);
 
+// for excel
+const excelStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadDir = path.join(__dirname, '..', 'uploads', 'excel');
+    createUploadsDir(uploadDir);
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueName = Date.now() + '-' + Math.round(Math.random() * 1e9);
+    cb(null, uniqueName + path.extname(file.originalname).toLowerCase());
+  }
+});
+
+//NEW: file filter for Excel
+const excelFileFilter = (req, file, cb) => {
+  const allowedTypes = /xlsx|xls/;
+  const ext = path.extname(file.originalname).toLowerCase();
+  if (allowedTypes.test(ext)) {
+    cb(null, true);
+  } else {
+    cb(new Error('Only Excel files (.xls, .xlsx) are allowed!'), false);
+  }
+};
+
+// 🔹 NEW: Excel upload middleware (single file)
+const uploadExcel = multer({
+  storage: excelStorage,
+  fileFilter: excelFileFilter,
+  limits: {
+    fileSize: 100 * 1024 * 1024 // 100MB limit (change if needed)
+  }
+}).single('file'); // field name = "file"
+
 module.exports = {
   uploadSingle,
-  uploadProductImages
+  uploadProductImages,
+  uploadExcel
 };
