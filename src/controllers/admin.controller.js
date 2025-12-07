@@ -90,8 +90,8 @@ exports.addBulkeProduct = async (req, res) => {
       }
 
       for (const row of rows) {
-        const product_type = row["Category"];
-        const subcategory_name = row["Sub Category"];
+        const product_type = row["Category"] || "N/A";
+        const subcategory_name = row["Sub Category"] || "N/A";
         const specification = { 
           "Sub Variant Title": row["Sub Variant Title"],
           "Sub Variant Value": row["Sub Variant Value"],
@@ -100,24 +100,29 @@ exports.addBulkeProduct = async (req, res) => {
           "Sub Variant Title_2": row["Sub Variant Title_2"],
           };
         //check if category already exists
+        if(product_type != "N/A" && product_type != ""){
         const existing = await Category.findOne({ where: { name: product_type } });
         //if category does not exist, create it
         if (!existing) await Category.create({ name: product_type, description: "", status: "ACTIVE" });
+        }
 
         //check if subcategory already exists
-        const subcategory = await Subcategory.findOne({
-            where: {
-              category_name: product_type,
-              name: subcategory_name
-            }
+        if(subcategory_name != "N/A" && subcategory_name != "" && product_type != "N/A" && product_type != ""){
+          const subcategory = await Subcategory.findOne({
+              where: {
+                category_name: product_type,
+                name: subcategory_name
+              }
+            });
+          //if subcategory does not exist, create it
+          if (!subcategory) await Subcategory.create({
+            category_name: product_type,
+            name: subcategory_name,
+            description: "",
+            status: "ACTIVE"
           });
-        //if subcategory does not exist, create it
-        if (!subcategory) await Subcategory.create({
-          category_name: product_type,
-          name: subcategory_name,
-          description: "",
-          status: "ACTIVE"
-        });
+        }
+
         const user = await User.findByPk(userId);
 
       //   return res.status(200).json({
@@ -129,31 +134,31 @@ exports.addBulkeProduct = async (req, res) => {
         // Create the product
       const product = await Product.create({
         userId,
-        productImageUrl:row["IMAGES  31 Images left"],
+        productImageUrl:row["IMAGES  31 Images left"] || "N/A",
         userType:user?.userType || 'admin',
-        heading:row["Product Name"],
-        sub_heading: row["Sub Product Name"] || null,
-        details: row["Product Description"] || null,
-        price:row["Price after discount"],
-        mrp :row["Buying Price"] || null,
+        heading:row["Product Name"] || "N/A",
+        sub_heading: row["Sub Product Name"] || "N/A",
+        details: row["Product Description"] || "N/A",
+        price:row["Price after discount"] || "N/A",
+        mrp :row["Buying Price"] || "N/A",
         specification: specification ? JSON.stringify(specification) : null,
         product_type,
-        brand:row["Brand"],
-        item:row["Variant Value"],
+        brand:row["Brand"] || "N/A",
+        item:row["Variant Value"] || "N/A",
         status:row["Status"] || "ACTIVE",
-        stock_quantity:row["Pack of"],
-        measure:row["Measure"],
-        selling_measure:row["Selling Measure"],
-        measure_term:row["Measure Term"],
-        measure_value:row["Measure Value"],
-        selling_measure_rate:row["Selling Measure Rate"],
-        unit_mrp_incl_gst:row["MRP (Incl GST)            125 MRP Entries left"],
+        stock_quantity:row["Pack of"] || "N/A",
+        measure:row["Measure"] || "N/A",
+        selling_measure:row["Selling Measure"] || "N/A",
+        measure_term:row["Measure Term"] || "N/A",
+        measure_value:row["Measure Value"] || "N/A",
+        selling_measure_rate:row["Selling Measure Rate"] || "N/A",
+        unit_mrp_incl_gst:row["MRP (Incl GST)            125 MRP Entries left"] || "N/A",
         discount_rule: row["Discount Rule"] || 'percentage',
-        discount_value:row["Dealer Discount"],
-        delivery_time:row["Delivery Time"],
-        logistics_rule:row["Logistics Rule"],
-        gst:row["GST"],
-        delivery_charges:row["Delivery Charges"],
+        discount_value:row["Dealer Discount"] || "N/A",
+        delivery_time:row["Delivery Time"] || "N/A",
+        logistics_rule:row["Logistics Rule"] || "N/A",
+        gst:row["GST"] || "N/A",
+        delivery_charges:row["Delivery Charges"] || "N/A",
         coupon_code_apply:row["Coupon Code Apply"] || "No",
       });
 
