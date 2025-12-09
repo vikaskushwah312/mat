@@ -155,15 +155,15 @@ console.log("🧱 Final SQL WHERE:", whereClause);
       const total = countResult.total;
   
       // Format products
-      const formattedProducts = products.map(p => ({
+     const formattedProducts = products.map(p => ({
         id: p.id,
         name: p.name,
         sub_heading: p.sub_heading,
         description: p.description,
         price: parseFloat(p.price),
         mrp: parseFloat(p.mrp || p.price),
-        discount: p.mrp > p.price ? Math.round(((p.mrp - p.price) / p.mrp) * 100) : 0,
         specification: p.specification,
+        discount: p.mrp > p.price ? Math.round(((p.mrp - p.price) / p.mrp) * 100) : 0,
         product_type: p.product_type,
         brand: p.brand,
         item: p.item,
@@ -182,6 +182,13 @@ console.log("🧱 Final SQL WHERE:", whereClause);
         gst: p.gst,
         delivery_charges: p.delivery_charges,
         coupon_code_apply: p.coupon_code_apply,
+        selling_price: p.selling_price,
+        selling_price_incl_gst: p.selling_price_incl_gst,
+        selling_price_incl_gst_with_discount: p.selling_price_incl_gst_with_discount,
+        selling_price_with_discount: p.selling_price_with_discount,
+        selling_price_with_gst: p.selling_price_with_gst,
+        selling_price_with_gst_with_discount: p.selling_price_with_gst_with_discount,
+        selling_price_with_discount_and_gst: p.selling_price_with_discount_and_gst,
         images: p.images ? p.images.split(',') : [] // convert comma string to array
       }));
   
@@ -311,186 +318,186 @@ exports.getProductById = async (req, res) => {
 
 
 // Get all products by user Id
-exports.getAllProducts = async (req, res) => {
-  try {
-    const { 
-      userId,
-      page = 1, 
-      limit = 10, 
-      product_type, 
-      item,
-      brand, 
-      price, 
-      // maxPrice, 
-      search,
-      userType, 
-      sortBy = 'created_at', 
-      order = 'DESC' 
-    } = req.query;
-    const offset = (page - 1) * limit;
+// exports.getAllProducts = async (req, res) => {
+//   try {
+//     const { 
+//       userId,
+//       page = 1, 
+//       limit = 10, 
+//       product_type, 
+//       item,
+//       brand, 
+//       price, 
+//       // maxPrice, 
+//       search,
+//       userType, 
+//       sortBy = 'created_at', 
+//       order = 'DESC' 
+//     } = req.query;
+//     const offset = (page - 1) * limit;
 
-    // Build WHERE clause
-    let whereClause = `WHERE p.status = 'active'`;
-    whereClause += ` AND p.userType IN ('admin', 'subAdmin')`;
-    const replacements = {};
+//     // Build WHERE clause
+//     let whereClause = `WHERE p.status = 'active'`;
+//     whereClause += ` AND p.userType IN ('admin', 'subAdmin')`;
+//     const replacements = {};
 
-    // if (userType && ['admin', 'subAdmin'].includes(userType.trim())) {
-    //     whereClause += ` AND p.userType = :userType`;
-    //     replacements.userType = userType.trim();
-    // }
+//     // if (userType && ['admin', 'subAdmin'].includes(userType.trim())) {
+//     //     whereClause += ` AND p.userType = :userType`;
+//     //     replacements.userType = userType.trim();
+//     // }
 
-    if (userId && userId.trim() !== "" && userId.trim() !== '""') {
-      whereClause += ` AND p.userId = :userId`;
-      replacements.userId = userId;
-    }
+//     if (userId && userId.trim() !== "" && userId.trim() !== '""') {
+//       whereClause += ` AND p.userId = :userId`;
+//       replacements.userId = userId;
+//     }
 
-    if (product_type && product_type.trim() !== "" && product_type.trim() !== '""') {
-      whereClause += ` AND TRIM(p.product_type) = :product_type`;
-      replacements.product_type = product_type.trim();
-    }
-    if (item && item.trim() !== "" && item.trim() !== '""') {
-      const cleanItem = item.trim().replace(/^['"]+|['"]+$/g, '').trim(); // remove quotes
+//     if (product_type && product_type.trim() !== "" && product_type.trim() !== '""') {
+//       whereClause += ` AND TRIM(p.product_type) = :product_type`;
+//       replacements.product_type = product_type.trim();
+//     }
+//     if (item && item.trim() !== "" && item.trim() !== '""') {
+//       const cleanItem = item.trim().replace(/^['"]+|['"]+$/g, '').trim(); // remove quotes
     
-      whereClause += ` AND LOWER(TRIM(p.item)) LIKE :item`;
-      replacements.item = `${cleanItem.toLowerCase()}%`; // starts with given text
-    }      
+//       whereClause += ` AND LOWER(TRIM(p.item)) LIKE :item`;
+//       replacements.item = `${cleanItem.toLowerCase()}%`; // starts with given text
+//     }      
     
-    // sanitize brand from query
-    let brandRaw = req.query?.brand;           
-    let brandClean = '';
+//     // sanitize brand from query
+//     let brandRaw = req.query?.brand;           
+//     let brandClean = '';
 
-    if (typeof brandRaw !== 'undefined' && brandRaw !== null) {
-      brandClean = String(brandRaw).trim();
+//     if (typeof brandRaw !== 'undefined' && brandRaw !== null) {
+//       brandClean = String(brandRaw).trim();
 
-      // Remove surrounding single or double quotes (and any extras)
-      // e.g. '"Greenply"' -> 'Greenply',  '""' -> ''
-      brandClean = brandClean.replace(/^['"]+|['"]+$/g, '').trim();
+//       // Remove surrounding single or double quotes (and any extras)
+//       // e.g. '"Greenply"' -> 'Greenply',  '""' -> ''
+//       brandClean = brandClean.replace(/^['"]+|['"]+$/g, '').trim();
 
-      // Optionally decode URI components if frontend double-encodes
-      try { brandClean = decodeURIComponent(brandClean); } catch (e) { /* ignore */ }
+//       // Optionally decode URI components if frontend double-encodes
+//       try { brandClean = decodeURIComponent(brandClean); } catch (e) { /* ignore */ }
 
-      // final trim after decode
-      brandClean = brandClean.trim();
-    }
+//       // final trim after decode
+//       brandClean = brandClean.trim();
+//     }
 
-    // Only add the brand WHERE clause when cleaned value is non-empty
-    if (brandClean.length > 0) {
-      whereClause += ` AND LOWER(TRIM(p.brand)) = :brand`;
-      replacements.brand = brandClean.toLowerCase();
-    }
-    // Price filters
-    // Always filter price > 0
-    whereClause += ` AND p.price >= 0`;
+//     // Only add the brand WHERE clause when cleaned value is non-empty
+//     if (brandClean.length > 0) {
+//       whereClause += ` AND LOWER(TRIM(p.brand)) = :brand`;
+//       replacements.brand = brandClean.toLowerCase();
+//     }
+//     // Price filters
+//     // Always filter price > 0
+//     whereClause += ` AND p.price >= 0`;
 
-    if (price) {
-      whereClause += ` AND p.price <= :price`;
-      replacements.price = parseFloat(price);
-    }
+//     if (price) {
+//       whereClause += ` AND p.price <= :price`;
+//       replacements.price = parseFloat(price);
+//     }
 
-    if (search && !['""', "''", 'undefined', 'null'].includes(search.trim())) {
-        // Remove leading and trailing quotes
-        console.log("in side the search opton ")
-        const cleanSearch = search.trim().replace(/^['"]+|['"]+$/g, ''); // remove quotes
-        whereClause += ` AND (
-          LOWER(p.heading) LIKE :search OR 
-          LOWER(p.sub_heading) LIKE :search OR 
-          LOWER(p.details) LIKE :search
-        )`;
-        replacements.search = `%${cleanSearch.toLowerCase()}%`;
-      }
+//     if (search && !['""', "''", 'undefined', 'null'].includes(search.trim())) {
+//         // Remove leading and trailing quotes
+//         console.log("in side the search opton ")
+//         const cleanSearch = search.trim().replace(/^['"]+|['"]+$/g, ''); // remove quotes
+//         whereClause += ` AND (
+//           LOWER(p.heading) LIKE :search OR 
+//           LOWER(p.sub_heading) LIKE :search OR 
+//           LOWER(p.details) LIKE :search
+//         )`;
+//         replacements.search = `%${cleanSearch.toLowerCase()}%`;
+//       }
 
-    // Sorting
-    let orderBy = `ORDER BY p.created_at DESC`;
-    if (['price', 'created_at'].includes(sortBy)) {
-      orderBy = `ORDER BY p.${sortBy} ${order}`;
-    }
+//     // Sorting
+//     let orderBy = `ORDER BY p.created_at DESC`;
+//     if (['price', 'created_at'].includes(sortBy)) {
+//       orderBy = `ORDER BY p.${sortBy} ${order}`;
+//     }
 
-    // SQL query with GROUP_CONCAT to get all images
-    const query = `
-      SELECT 
-        p.id,
-        p.userId,
-        p.heading AS name,
-        p.sub_heading,
-        p.details AS description,
-        p.price,
-        p.mrp,
-        p.product_type,
-        p.brand,
-        p.item,
-        p.status,
-        p.productImageUrl,
-        GROUP_CONCAT(pi.image_url ORDER BY pi.is_primary DESC, pi.display_order ASC, pi.id ASC) AS images
-      FROM products p
-      LEFT JOIN product_images pi
-        ON pi.productId = p.id AND pi.status = 'active'
-      ${whereClause}
-      GROUP BY p.id
-      ${orderBy}
-      LIMIT :limit OFFSET :offset
-    `;
+//     // SQL query with GROUP_CONCAT to get all images
+//     const query = `
+//       SELECT 
+//         p.id,
+//         p.userId,
+//         p.heading AS name,
+//         p.sub_heading,
+//         p.details AS description,
+//         p.price,
+//         p.mrp,
+//         p.product_type,
+//         p.brand,
+//         p.item,
+//         p.status,
+//         p.productImageUrl,
+//         GROUP_CONCAT(pi.image_url ORDER BY pi.is_primary DESC, pi.display_order ASC, pi.id ASC) AS images
+//       FROM products p
+//       LEFT JOIN product_images pi
+//         ON pi.productId = p.id AND pi.status = 'active'
+//       ${whereClause}
+//       GROUP BY p.id
+//       ${orderBy}
+//       LIMIT :limit OFFSET :offset
+//     `;
 
-    // Count query for pagination
-    const countQuery = `
-      SELECT COUNT(*) AS total
-      FROM products p
-      ${whereClause}
-    `;
+//     // Count query for pagination
+//     const countQuery = `
+//       SELECT COUNT(*) AS total
+//       FROM products p
+//       ${whereClause}
+//     `;
 
-    replacements.limit = parseInt(limit);
-    replacements.offset = offset;
+//     replacements.limit = parseInt(limit);
+//     replacements.offset = offset;
 
-    const products = await sequelize.query(query, {
-      replacements,
-      type: sequelize.QueryTypes.SELECT
-    });
+//     const products = await sequelize.query(query, {
+//       replacements,
+//       type: sequelize.QueryTypes.SELECT
+//     });
 
-    const [countResult] = await sequelize.query(countQuery, {
-      replacements,
-      type: sequelize.QueryTypes.SELECT
-    });
+//     const [countResult] = await sequelize.query(countQuery, {
+//       replacements,
+//       type: sequelize.QueryTypes.SELECT
+//     });
 
-    const total = countResult.total;
+//     const total = countResult.total;
 
-    // Format products
-    const formattedProducts = products.map(p => ({
-      id: p.id,
-      name: p.name,
-      sub_heading: p.sub_heading,
-      description: p.description,
-      price: parseFloat(p.price),
-      mrp: parseFloat(p.mrp || p.price),
-      discount: p.mrp > p.price ? Math.round(((p.mrp - p.price) / p.mrp) * 100) : 0,
-      product_type: p.product_type,
-      brand: p.brand,
-      item: p.item,
-      status: p.status,
-      productImageUrl: p.productImageUrl,
-      images: p.images ? p.images.split(',') : [] // convert comma string to array
-    }));
+//     // Format products
+//     const formattedProducts = products.map(p => ({
+//       id: p.id,
+//       name: p.name,
+//       sub_heading: p.sub_heading,
+//       description: p.description,
+//       price: parseFloat(p.price),
+//       mrp: parseFloat(p.mrp || p.price),
+//       discount: p.mrp > p.price ? Math.round(((p.mrp - p.price) / p.mrp) * 100) : 0,
+//       product_type: p.product_type,
+//       brand: p.brand,
+//       item: p.item,
+//       status: p.status,
+//       productImageUrl: p.productImageUrl,
+//       images: p.images ? p.images.split(',') : [] // convert comma string to array
+//     }));
 
-    res.status(200).json({
-      status: 'success',
-      data: {
-        pagination: {
-          total,
-          totalPages: Math.ceil(total / limit),
-          currentPage: parseInt(page),
-          perPage: parseInt(limit)
-        },
-        products: formattedProducts,
-      }
-    });
+//     res.status(200).json({
+//       status: 'success',
+//       data: {
+//         pagination: {
+//           total,
+//           totalPages: Math.ceil(total / limit),
+//           currentPage: parseInt(page),
+//           perPage: parseInt(limit)
+//         },
+//         products: formattedProducts,
+//       }
+//     });
 
-  } catch (error) {
-    console.error('Error fetching products:', error);
-    res.status(500).json({
-      status: 'error',
-      message: 'Failed to fetch products',
-      ...(process.env.NODE_ENV === 'development' && { error: error.message })
-    });
-  }
-}; 
+//   } catch (error) {
+//     console.error('Error fetching products:', error);
+//     res.status(500).json({
+//       status: 'error',
+//       message: 'Failed to fetch products',
+//       ...(process.env.NODE_ENV === 'development' && { error: error.message })
+//     });
+//   }
+// }; 
 
 // Add a new product
 exports.addProduct = async (req, res) => {
