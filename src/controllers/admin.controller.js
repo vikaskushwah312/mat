@@ -76,14 +76,6 @@ exports.addBulkeProduct = async (req, res) => {
       const sheetName = workbook.SheetNames[0];
       const sheet = workbook.Sheets[sheetName];
       const rows = XLSX.utils.sheet_to_json(sheet);
-      // console.log("filePath", filePath);
-      // console.log("workbook", workbook);
-      // console.log("sheetName", sheetName);
-      // console.log("sheet", sheet);
-      //console.log("rows", rows);
-      // console.log("rows.length", rows.length);
-      // console.log("userId", userId);
-      
 
       if (rows.length === 0) {
         return res.status(400).json({ message: 'No data found in the Excel file' });
@@ -134,7 +126,7 @@ exports.addBulkeProduct = async (req, res) => {
         // Create the product
       const product = await Product.create({
         userId,
-        productImageUrl:row["IMAGES  31 Images left"] || "N/A",
+        productImageUrl: "",
         userType:user?.userType || 'admin',
         heading:row["Product Name"] || "N/A",
         sub_heading: row["Sub Product Name"] || "N/A",
@@ -162,16 +154,38 @@ exports.addBulkeProduct = async (req, res) => {
         coupon_code_apply:row["Coupon Code Apply"] || "No",
       });
 
+// http://35.154.175.155:3000/uploads/products/default/1765110041551-320321217.png
+        const imageField = row["IMAGES  31 Images left"];
+        if (imageField && typeof imageField === "string" && imageField.trim() !== "") {
 
-        if (row["IMAGES  31 Images left"] != '') {
-          const imageData = {
-            productId: product.id,
-            image_url: row["IMAGES  31 Images left"],
-            is_primary: false, // first image primary
-            display_order: 1,
-            status: 'active'
-          };
-          await ProductImage.bulkCreate(imageData);
+          console.log("images", row["IMAGES  31 Images left"])
+          const str = row["IMAGES  31 Images left"];
+          const images = str.split(",").map(s => s.trim());
+          console.log("parsed images:", images);
+          const hostName = constant.HOST
+          // const hostName = 'http://localhost:3000'
+          if (images.length > 0) {
+            const imageData = images.map((url, index) => ({
+              productId: product.id,
+              image_url: `${hostName}/uploads/products/default/images/${url}.png`,
+              is_primary: index === 0 ? true : false, // first image primary
+              display_order: index,
+              status: 'active'
+            }));
+            console.log("image data:", imageData);
+            await ProductImage.bulkCreate(imageData);
+          }
+
+
+
+          // const imageData = {
+          //   productId: product.id,
+          //   image_url: row["IMAGES  31 Images left"],
+          //   is_primary: false, // first image primary
+          //   display_order: 1,
+          //   status: 'active'
+          // };
+          // await ProductImage.bulkCreate(imageData);
         }
       }
 
