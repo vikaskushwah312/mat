@@ -7,8 +7,10 @@ const OrderItem = require('../models/orderItem.model');
 const AdminProductImage = require('../models/admin_product_images.model');
 const Category = require('../models/category.model');
 const Subcategory = require('../models/subcategory.model');
+const constant = require('../config/constant');
 const XLSX = require('xlsx');
 const fs = require('fs').promises;
+
 require('dotenv').config();
 
 // Upload product images
