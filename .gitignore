@@ -1,4 +1,4 @@
-src/uploads/
+#src/uploads/
 src/config/db.js
 # Logs
 logs
